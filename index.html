@@ -1,0 +1,208 @@
+<html>
+<head>
+  <style>
+    body {
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: linear-gradient(45deg, #1a1a1a, #2d2d2d);
+      font-family: 'Arial', sans-serif;
+      margin: 0;
+      padding: 20px;
+    }
+
+    .card {
+      width: 400px;
+      height: 250px;
+      perspective: 1000px;
+      cursor: pointer;
+    }
+
+    .card-inner {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      text-align: center;
+      transition: transform 0.8s;
+      transform-style: preserve-3d;
+    }
+
+    .card-front, .card-back {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+      border-radius: 15px;
+      padding: 20px;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .card-front {
+      background: linear-gradient(135deg, #111, #333);
+      color: white;
+    }
+
+    .card-back {
+      background: linear-gradient(135deg, #111, #333);
+      color: white;
+      transform: rotateY(180deg);
+    }
+
+    .chip {
+      width: 50px;
+      height: 35px;
+      background: #ffd700;
+      border-radius: 4px;
+      margin-bottom: 15px;
+      align-self: flex-start;
+    }
+
+    .card-number {
+      font-size: 18px;
+      letter-spacing: 2px;
+      margin: 10px 0;
+    }
+
+    .card-info {
+      display: flex;
+      justify-content: space-between;
+      font-size: 16px;
+      align-items: center;
+    }
+
+    .magnetic-strip {
+      background: #000;
+      height: 40px;
+      margin: 20px 0;
+    }
+
+    .cvv {
+      background: rgba(255, 255, 255, 0.1); /* Cambiado a un fondo más oscuro */
+      color: white;
+      padding: 5px;
+      text-align: right;
+      margin-top: 20px;
+    }
+
+    input {
+      background: transparent;
+      border: none;
+      color: white;
+      font-size: inherit;
+      width: 100%;
+      padding: 5px;
+      border-bottom: 1px solid rgba(255,255,255,0.3);
+    }
+
+    input:focus {
+      outline: none;
+      border-bottom: 1px solid rgba(255,255,255,0.8);
+    }
+
+    ::placeholder {
+      color: rgba(255,255,255,0.5);
+    }
+  </style>
+</head>
+<body>
+  <div class="card" id="creditCard">
+    <div class="card-inner" id="cardInner">
+      <div class="card-front">
+        <div style="display: flex; justify-content: flex-end;">
+          <svg width="60" height="40" viewBox="0 0 60 40">
+            <circle cx="20" cy="20" r="18" fill="#ff0000" opacity="0.8"/>
+            <circle cx="40" cy="20" r="18" fill="#ff9900" opacity="0.8"/>
+          </svg>
+        </div>
+        <div class="chip"></div>
+        <div class="card-number">
+          <input type="text" id="cardNumber" placeholder="1234 5678 9012 3456" maxlength="19" />
+        </div>
+        <div class="card-info">
+          <div style="width: 60%;">
+            <div style="font-size: 10px; margin-bottom: 3px;">Card Holder</div>
+            <input type="text" id="cardHolder" placeholder="FULL NAME" />
+          </div>
+          <div style="width: 35%;">
+            <div style="font-size: 10px; margin-bottom: 3px;">Expires</div>
+            <input type="text" id="expiry" placeholder="MM/YY" maxlength="5" />
+          </div>
+        </div>
+      </div>
+      <div class="card-back">
+        <div class="magnetic-strip"></div>
+        <div style="display: flex; justify-content: flex-end; padding: 10px;">
+          <div style="font-size: 12px; margin-right: 10px;">CVV</div>
+          <input type="text" class="cvv" id="cvv" placeholder="123" maxlength="3" />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let isFront = true;
+    const cardInner = document.getElementById('cardInner');
+
+    // Hacer que la tarjeta rote al presionar Enter
+    document.addEventListener('keydown', function(event) {
+      if (event.key === 'Enter') {
+        // Verificar si todos los campos de la parte delantera están llenos
+        if (isFront) {
+          const cardHolder = document.getElementById('cardHolder').value;
+          const cardNumber = document.getElementById('cardNumber').value;
+          const expiry = document.getElementById('expiry').value;
+
+          if (cardHolder && cardNumber && expiry) {
+            isFront = !isFront; // Cambiar el estado
+            cardInner.style.transform = isFront ? 'rotateY(0deg)' : 'rotateY(180deg)';
+          }
+        } else {
+          isFront = !isFront; // Cambiar el estado
+          cardInner.style.transform = isFront ? 'rotateY(0deg)' : 'rotateY(180deg)';
+        }
+      }
+    });
+
+    // Formato del número de tarjeta
+    document.getElementById('cardNumber').addEventListener('input', function(e) {
+      let value = e.target.value.replace(/\s/g, '').replace(/\D/g, '');
+      let newValue = '';
+      for(let i = 0; i < value.length; i++) {
+        if(i > 0 && i % 4 === 0) {
+          newValue += ' ';
+        }
+        newValue += value[i];
+      }
+      e.target.value = newValue;
+    });
+
+    // Formato de fecha de expiración
+    document.getElementById('expiry').addEventListener('input', function(e) {
+      let value = e.target.value.replace(/\D/g, '');
+      let newValue = '';
+
+      if(value.length > 0) {
+        newValue = value.substr(0, 2);
+        if(value.length > 2) {
+          newValue += '/' + value.substr(2, 2);
+        }
+      }
+      e.target.value = newValue;
+    });
+
+    // Validación del CVV
+    document.getElementById('cvv').addEventListener('input', function(e) {
+      e.target.value = e.target.value.replace(/\D/g, '');
+    });
+
+    // Convertir a mayúsculas el nombre, evitando números
+    document.getElementById('cardHolder').addEventListener('input', function(e) {
+      e.target.value = e.target.value.replace(/[^a-zA-Z\s]/g, '').toUpperCase(); // Solo letras y espacios
+    });
+  </script>
+</body>
+</html>
